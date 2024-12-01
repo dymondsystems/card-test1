@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page 2 - Rearrange Cards</title>
+    <title>Page 2 - Display Cards</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .card-container {
@@ -18,12 +18,10 @@
             cursor: pointer;
         }
 
-        /* Add styles to visually show the drag target */
         .dragging {
             opacity: 0.5;
         }
 
-        /* Optional: style for drop targets */
         .drop-target {
             border: 2px dashed #007bff;
             border-radius: 8px;
@@ -31,29 +29,26 @@
     </style>
     <script>
         window.onload = function() {
-            // Get the card data from localStorage
-            const cardData = JSON.parse(localStorage.getItem('cardData'));
-            
-            if (cardData) {
-                // Create two cards dynamically
-                const cardHTML = `
-                    <div class="card" id="card1" draggable="true">
-                        <div class="card-body">
-                            <h5 class="card-title">${cardData.title}</h5>
-                            <p class="card-text">${cardData.content}</p>
+            const savedCards = JSON.parse(localStorage.getItem('cardData'));
+
+            if (savedCards && savedCards.length > 0) {
+                // Create cards based on the saved data
+                let cardHTML = '';
+                savedCards.forEach((cardData, index) => {
+                    cardHTML += `
+                        <div class="card" id="card${index+1}" draggable="true">
+                            <div class="card-body">
+                                <h5 class="card-title">${cardData.title}</h5>
+                                <p class="card-text">${cardData.content}</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card" id="card2" draggable="true">
-                        <div class="card-body">
-                            <h5 class="card-title">${cardData.title} (Copy)</h5>
-                            <p class="card-text">${cardData.content} (Copy)</p>
-                        </div>
-                    </div>
-                `;
+                    `;
+                });
+
                 // Insert the cards into the container
                 document.getElementById('cardContainer').innerHTML = cardHTML;
 
-                // Add event listeners for drag events
+                // Add drag-and-drop functionality to each card
                 const cards = document.querySelectorAll('.card');
                 cards.forEach(card => {
                     card.addEventListener('dragstart', dragStart);
@@ -64,56 +59,49 @@
                     card.addEventListener('drop', dropCard);
                 });
             } else {
-                // If no card data is found, show a message
                 document.getElementById('cardContainer').innerHTML = '<p>No card data found!</p>';
             }
         };
 
         let draggedCard = null;
 
-        // Handle dragstart event
+        // Drag start function
         function dragStart(e) {
             draggedCard = e.target;
             draggedCard.classList.add('dragging');
         }
 
-        // Handle dragend event
+        // Drag end function
         function dragEnd(e) {
             draggedCard.classList.remove('dragging');
             draggedCard = null;
         }
 
-        // Handle dragover event
+        // Allow drop function
         function allowDrop(e) {
-            e.preventDefault();  // Allow dropping
+            e.preventDefault();
         }
 
-        // Handle dragenter event (when dragging over a card)
+        // Drag enter function
         function dragEnter(e) {
             e.preventDefault();
             const targetCard = e.target;
-
-            // Only add the drop-target style if the card is not the one being dragged
             if (targetCard !== draggedCard) {
                 targetCard.classList.add('drop-target');
             }
         }
 
-        // Handle dragleave event (when dragging out of a card)
+        // Drag leave function
         function dragLeave(e) {
             const targetCard = e.target;
             targetCard.classList.remove('drop-target');
         }
 
-        // Handle drop event (when a card is dropped on another card)
+        // Drop card function (reorder the cards)
         function dropCard(e) {
             e.preventDefault();
-
             const targetCard = e.target;
-
-            // Ensure the target is not the card being dragged
             if (targetCard !== draggedCard) {
-                // Swap the cards by moving them around
                 const parent = targetCard.parentElement;
                 const draggedIndex = Array.from(parent.children).indexOf(draggedCard);
                 const targetIndex = Array.from(parent.children).indexOf(targetCard);
@@ -124,8 +112,6 @@
                     parent.insertBefore(draggedCard, targetCard);
                 }
             }
-
-            // Remove the drop target highlight
             targetCard.classList.remove('drop-target');
         }
     </script>
@@ -133,9 +119,9 @@
 <body>
 
 <div class="container mt-5">
-    <h1>Page 2 - Rearrange Cards</h1>
+    <h1>Page 2 - Display Cards</h1>
     
-    <!-- The container for the two cards -->
+    <!-- Container for displaying the cards -->
     <div id="cardContainer" class="card-container"></div>
 
     <a href="page1.html" class="btn btn-secondary mt-3">Go Back to Page 1</a>
