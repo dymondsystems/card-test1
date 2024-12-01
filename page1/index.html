@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page 2 - Drag and Drop Card</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Add some styles for the drop zone */
+        #dropZone {
+            height: 400px;
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #007bff;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+    </style>
+    <script>
+        window.onload = function() {
+            // Get the card data from localStorage
+            const cardData = JSON.parse(localStorage.getItem('cardData'));
+            
+            if (cardData) {
+                // Create the card HTML dynamically
+                const cardHTML = `
+                    <div class="card" id="draggableCard" style="width: 18rem;" draggable="true">
+                        <div class="card-body">
+                            <h5 class="card-title">${cardData.title}</h5>
+                            <p class="card-text">${cardData.content}</p>
+                        </div>
+                    </div>
+                `;
+                // Append the card to the body
+                document.getElementById('cardContainer').innerHTML = cardHTML;
+
+                // Add event listeners for drag events
+                const card = document.getElementById('draggableCard');
+                card.addEventListener('dragstart', dragStart);
+                card.addEventListener('dragend', dragEnd);
+            } else {
+                // If no card data is found, show a message
+                document.getElementById('cardContainer').innerHTML = '<p>No card data found!</p>';
+            }
+        };
+
+        // Handle dragstart event
+        function dragStart(e) {
+            // Store the dragged card element in the dataTransfer object
+            e.dataTransfer.setData("text", e.target.id);
+        }
+
+        // Handle dragend event
+        function dragEnd(e) {
+            // Reset the drop zone to its default state
+            const dropZone = document.getElementById('dropZone');
+            dropZone.style.backgroundColor = "transparent";
+            dropZone.innerHTML = "Drop the card here!";
+        }
+
+        // Handle dragover event on drop zone
+        function allowDrop(e) {
+            e.preventDefault(); // Prevent the default behavior
+            e.target.style.backgroundColor = "#f0f0f0";
+        }
+
+        // Handle drop event on drop zone
+        function dropCard(e) {
+            e.preventDefault();
+            const cardId = e.dataTransfer.getData("text");
+            const card = document.getElementById(cardId);
+            e.target.appendChild(card);
+            e.target.style.backgroundColor = "transparent";
+            e.target.innerHTML = "Card dropped!";
+        }
+    </script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1>Page 2 - Drag and Drop Card</h1>
+    
+    <!-- The card will be displayed here -->
+    <div id="cardContainer"></div>
+
+    <!-- The drop zone where the card can be dropped -->
+    <div id="dropZone" ondrop="dropCard(event)" ondragover="allowDrop(event)">
+        Drop the card here!
+    </div>
+
+    <a href="page1.html" class="btn btn-secondary mt-3">Go Back to Page 1</a>
+</div>
+
+</body>
+</html>
