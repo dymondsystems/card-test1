@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page 1 - Add Card</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script>
+        function saveCardData() {
+            const cardData = {
+                title: "Card Title",
+                content: "This is some content for the card. It's saved to localStorage."
+            };
+            // Save the card data in localStorage
+            localStorage.setItem('cardData', JSON.stringify(cardData));
+            alert("Card data saved!");
+        }
+    </script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1>Page 1</h1>
+    <button class="btn btn-primary" onclick="saveCardData()">Save Card Data</button>
+    <a href="https://dymond.systems/card-test1/page1/" class="btn btn-secondary mt-3">Go to Page 2</a>
+</div>
+
+</body>
+</html>
