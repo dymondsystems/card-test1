@@ -5,27 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page 1 - Select Cards to Save</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
     <script>
         function saveOneCard() {
             const cardData = {
-                title: "Card Title",
-                content: "This is some content for the first card."
+                imageUrl: "https://logosandtypes.com/wp-content/uploads/2021/04/Angi.png",
+                title: "Angi",
+                description: "Use Angi my business to control your online Google presence"
             };
-            // Save a single card data in localStorage
+            // Save one card data in localStorage
             localStorage.setItem('cardData', JSON.stringify([cardData]));
             alert("One card saved!");
         }
 
         function saveBothCards() {
             const cardData1 = {
-                title: "Card Title 1",
-                content: "This is some content for the first card."
+                imageUrl: "https://logosandtypes.com/wp-content/uploads/2021/04/Angi.png",
+                title: "Angi",
+                description: "Use Angi my business to control your online Google presence"
             };
             const cardData2 = {
-                title: "Card Title 2",
-                content: "This is some content for the second card."
+                imageUrl: "https://logosandtypes.com/wp-content/uploads/2021/04/Angi.png",
+                title: "Angi (Copy)",
+                description: "A second card of Angi with the same business functionality"
             };
-            // Save both card data in localStorage
+            // Save both cards data in localStorage
             localStorage.setItem('cardData', JSON.stringify([cardData1, cardData2]));
             alert("Both cards saved!");
         }
