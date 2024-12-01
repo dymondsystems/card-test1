@@ -3,21 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page 2 - Drag and Drop Card</title>
+    <title>Page 2 - Rearrange Cards</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Add some styles for the drop zone */
-        #dropZone {
-            height: 400px;
+        .card-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .card {
+            width: 18rem;
+            cursor: pointer;
+        }
+
+        /* Add styles to visually show the drag target */
+        .dragging {
+            opacity: 0.5;
+        }
+
+        /* Optional: style for drop targets */
+        .drop-target {
             border: 2px dashed #007bff;
             border-radius: 8px;
-            margin-top: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #007bff;
-            font-size: 1.2rem;
-            text-align: center;
         }
     </style>
     <script>
@@ -26,71 +35,108 @@
             const cardData = JSON.parse(localStorage.getItem('cardData'));
             
             if (cardData) {
-                // Create the card HTML dynamically
+                // Create two cards dynamically
                 const cardHTML = `
-                    <div class="card" id="draggableCard" style="width: 18rem;" draggable="true">
+                    <div class="card" id="card1" draggable="true">
                         <div class="card-body">
                             <h5 class="card-title">${cardData.title}</h5>
                             <p class="card-text">${cardData.content}</p>
                         </div>
                     </div>
+                    <div class="card" id="card2" draggable="true">
+                        <div class="card-body">
+                            <h5 class="card-title">${cardData.title} (Copy)</h5>
+                            <p class="card-text">${cardData.content} (Copy)</p>
+                        </div>
+                    </div>
                 `;
-                // Append the card to the body
+                // Insert the cards into the container
                 document.getElementById('cardContainer').innerHTML = cardHTML;
 
                 // Add event listeners for drag events
-                const card = document.getElementById('draggableCard');
-                card.addEventListener('dragstart', dragStart);
-                card.addEventListener('dragend', dragEnd);
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(card => {
+                    card.addEventListener('dragstart', dragStart);
+                    card.addEventListener('dragend', dragEnd);
+                    card.addEventListener('dragover', allowDrop);
+                    card.addEventListener('dragenter', dragEnter);
+                    card.addEventListener('dragleave', dragLeave);
+                    card.addEventListener('drop', dropCard);
+                });
             } else {
                 // If no card data is found, show a message
                 document.getElementById('cardContainer').innerHTML = '<p>No card data found!</p>';
             }
         };
 
+        let draggedCard = null;
+
         // Handle dragstart event
         function dragStart(e) {
-            // Store the dragged card element in the dataTransfer object
-            e.dataTransfer.setData("text", e.target.id);
+            draggedCard = e.target;
+            draggedCard.classList.add('dragging');
         }
 
         // Handle dragend event
         function dragEnd(e) {
-            // Reset the drop zone to its default state
-            const dropZone = document.getElementById('dropZone');
-            dropZone.style.backgroundColor = "transparent";
-            dropZone.innerHTML = "Drop the card here!";
+            draggedCard.classList.remove('dragging');
+            draggedCard = null;
         }
 
-        // Handle dragover event on drop zone
+        // Handle dragover event
         function allowDrop(e) {
-            e.preventDefault(); // Prevent the default behavior
-            e.target.style.backgroundColor = "#f0f0f0";
+            e.preventDefault();  // Allow dropping
         }
 
-        // Handle drop event on drop zone
+        // Handle dragenter event (when dragging over a card)
+        function dragEnter(e) {
+            e.preventDefault();
+            const targetCard = e.target;
+
+            // Only add the drop-target style if the card is not the one being dragged
+            if (targetCard !== draggedCard) {
+                targetCard.classList.add('drop-target');
+            }
+        }
+
+        // Handle dragleave event (when dragging out of a card)
+        function dragLeave(e) {
+            const targetCard = e.target;
+            targetCard.classList.remove('drop-target');
+        }
+
+        // Handle drop event (when a card is dropped on another card)
         function dropCard(e) {
             e.preventDefault();
-            const cardId = e.dataTransfer.getData("text");
-            const card = document.getElementById(cardId);
-            e.target.appendChild(card);
-            e.target.style.backgroundColor = "transparent";
-            e.target.innerHTML = "Card dropped!";
+
+            const targetCard = e.target;
+
+            // Ensure the target is not the card being dragged
+            if (targetCard !== draggedCard) {
+                // Swap the cards by moving them around
+                const parent = targetCard.parentElement;
+                const draggedIndex = Array.from(parent.children).indexOf(draggedCard);
+                const targetIndex = Array.from(parent.children).indexOf(targetCard);
+
+                if (draggedIndex < targetIndex) {
+                    parent.insertBefore(draggedCard, targetCard.nextSibling);
+                } else {
+                    parent.insertBefore(draggedCard, targetCard);
+                }
+            }
+
+            // Remove the drop target highlight
+            targetCard.classList.remove('drop-target');
         }
     </script>
 </head>
 <body>
 
 <div class="container mt-5">
-    <h1>Page 2 - Drag and Drop Card</h1>
+    <h1>Page 2 - Rearrange Cards</h1>
     
-    <!-- The card will be displayed here -->
-    <div id="cardContainer"></div>
-
-    <!-- The drop zone where the card can be dropped -->
-    <div id="dropZone" ondrop="dropCard(event)" ondragover="allowDrop(event)">
-        Drop the card here!
-    </div>
+    <!-- The container for the two cards -->
+    <div id="cardContainer" class="card-container"></div>
 
     <a href="page1.html" class="btn btn-secondary mt-3">Go Back to Page 1</a>
 </div>
