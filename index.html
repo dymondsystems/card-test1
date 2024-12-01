@@ -8,29 +8,77 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
     <script>
         function saveOneCard() {
-            const cardData = {
-                imageUrl: "https://logosandtypes.com/wp-content/uploads/2021/04/Angi.png",
-                title: "Angi",
-                description: "Use Angi my business to control your online Google presence"
-            };
-            // Save one card data in localStorage
-            localStorage.setItem('cardData', JSON.stringify([cardData]));
+            const cardHTML = `
+                <div class="col-md-3">
+                    <div class="card border-success shadow-lg p-3 mb-5">
+                        <div class="dropdown">
+                            <i class="fa fa-ellipsis-v" aria-hidden="true" data-toggle="dropdown" style="float: right;"></i>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" data-toggle="modal" href="#accountinfo">Add account info</a>
+                                <a class="dropdown-item" data-toggle="modal" href="#needaccount">Edit category</a>
+                                <a class="dropdown-item" style="color:red;" data-toggle="modal" href="#needaccount">Remove from stack</a>
+                            </div>
+                        </div>
+                        <div class="card border-success shadow text-success p-3 my-card">
+                            <img class="lib-img-show" src="https://logosandtypes.com/wp-content/uploads/2021/04/Angi.png" alt="HTML tutorial" style="width:25px;height:25px;">
+                        </div>
+                        <br>
+                        <div class="text-success text-center mt-2"><h4>Angi</h4></div>
+                        <div class="text-success text-center mt-2"><p>Use Angi my business to control your online Google presence</p></div>
+                        <button onclick="angi()" class="btn btn-primary" role="button" data-toggle="modal" data-target="#screencover">Open</button>
+                    </div>
+                </div>
+            `;
+            // Save the full HTML content of the card
+            localStorage.setItem('cardData', JSON.stringify([cardHTML]));
             alert("One card saved!");
         }
 
         function saveBothCards() {
-            const cardData1 = {
-                imageUrl: "https://logosandtypes.com/wp-content/uploads/2021/04/Angi.png",
-                title: "Angi",
-                description: "Use Angi my business to control your online Google presence"
-            };
-            const cardData2 = {
-                imageUrl: "https://logosandtypes.com/wp-content/uploads/2021/04/Angi.png",
-                title: "Angi (Copy)",
-                description: "A second card of Angi with the same business functionality"
-            };
-            // Save both cards data in localStorage
-            localStorage.setItem('cardData', JSON.stringify([cardData1, cardData2]));
+            const cardHTML1 = `
+                <div class="col-md-3">
+                    <div class="card border-success shadow-lg p-3 mb-5">
+                        <div class="dropdown">
+                            <i class="fa fa-ellipsis-v" aria-hidden="true" data-toggle="dropdown" style="float: right;"></i>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" data-toggle="modal" href="#accountinfo">Add account info</a>
+                                <a class="dropdown-item" data-toggle="modal" href="#needaccount">Edit category</a>
+                                <a class="dropdown-item" style="color:red;" data-toggle="modal" href="#needaccount">Remove from stack</a>
+                            </div>
+                        </div>
+                        <div class="card border-success shadow text-success p-3 my-card">
+                            <img class="lib-img-show" src="https://logosandtypes.com/wp-content/uploads/2021/04/Angi.png" alt="HTML tutorial" style="width:25px;height:25px;">
+                        </div>
+                        <br>
+                        <div class="text-success text-center mt-2"><h4>Angi</h4></div>
+                        <div class="text-success text-center mt-2"><p>Use Angi my business to control your online Google presence</p></div>
+                        <button onclick="angi()" class="btn btn-primary" role="button" data-toggle="modal" data-target="#screencover">Open</button>
+                    </div>
+                </div>
+            `;
+            const cardHTML2 = `
+                <div class="col-md-3">
+                    <div class="card border-success shadow-lg p-3 mb-5">
+                        <div class="dropdown">
+                            <i class="fa fa-ellipsis-v" aria-hidden="true" data-toggle="dropdown" style="float: right;"></i>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" data-toggle="modal" href="#accountinfo">Add account info</a>
+                                <a class="dropdown-item" data-toggle="modal" href="#needaccount">Edit category</a>
+                                <a class="dropdown-item" style="color:red;" data-toggle="modal" href="#needaccount">Remove from stack</a>
+                            </div>
+                        </div>
+                        <div class="card border-success shadow text-success p-3 my-card">
+                            <img class="lib-img-show" src="https://logosandtypes.com/wp-content/uploads/2021/04/Angi.png" alt="HTML tutorial" style="width:25px;height:25px;">
+                        </div>
+                        <br>
+                        <div class="text-success text-center mt-2"><h4>Angi (Copy)</h4></div>
+                        <div class="text-success text-center mt-2"><p>Another Angi card to control your online Google presence</p></div>
+                        <button onclick="angi()" class="btn btn-primary" role="button" data-toggle="modal" data-target="#screencover">Open</button>
+                    </div>
+                </div>
+            `;
+            // Save both card HTML contents
+            localStorage.setItem('cardData', JSON.stringify([cardHTML1, cardHTML2]));
             alert("Both cards saved!");
         }
     </script>
