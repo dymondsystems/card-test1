@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Card Management</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    #cardContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .card-item {
+      flex: 0 0 calc(25% - 15px);
+      max-width: calc(25% - 15px);
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 768px) {
+      .card-item {
+        flex: 0 0 calc(50% - 15px);
+        max-width: calc(50% - 15px);
+      }
+    }
+
+    @media (max-width: 576px) {
+      .card-item {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+    }
+
+    .card {
+      margin-bottom: 20px;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      right: 0;
+      left: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
+    <h2 class="text-center mb-4">Dynamic Card Management</h2>
+    <div id="cardContainer" class="row">
+      <!-- Cards will be dynamically loaded here -->
+    </div>
+  </div>
+
+  <!-- Account Info Modal -->
+  <div class="modal fade" id="accountinfo" tabindex="-1" role="dialog" aria-labelledby="accountinfoLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="accountinfoLabel">Account Info</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Dynamic content will be inserted here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  loadCards();
+
+  // Enable drag-and-drop sorting
+  new Sortable(document.getElementById('cardContainer'), {
+    animation: 150,
+    onEnd: function () {
+      const reorderedCards = [];
+      document.querySelectorAll('#cardContainer .card-item').forEach(item => {
+        const cardId = item.getAttribute('data-id');
+        const storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+        const card = storedCards.find(c => c.id === cardId);
+        reorderedCards.push(card);
+      });
+      localStorage.setItem('addedCards', JSON.stringify(reorderedCards));
+    }
+  });
+});
+
+// Load cards from localStorage
+function loadCards() {
+  const storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+  const cardContainer = document.querySelector('#cardContainer');
+  cardContainer.innerHTML = ''; // Clear existing content
+
+  storedCards.forEach(card => {
+    cardContainer.innerHTML += `
+      <div class="col-md-3 col-sm-6 card-item" data-id="${card.id}" data-category="${card.category}">
+        <div class="card ${card.borderClass} mb-4">
+          <div class="card-body ${card.textClass}">
+            <div class="dropdown">
+              <i class="fa fa-ellipsis-v" aria-hidden="true" data-toggle="dropdown" style="float: right;"></i>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" data-toggle="modal" href="#accountinfo" onclick="showAccountInfo('${card.id}')">Add account info</a>
+                <a class="dropdown-item" href="#">Edit category</a>
+                <a class="dropdown-item" style="color:red;" onclick="removeCard('${card.id}')">Remove from stack</a>
+              </div>
+            </div>
+            <div class="card shadow p-3 my-card">
+              <img class="lib-img-show" src="${card.image}" alt="${card.title}" style="width:25px;height:25px;">
+            </div>
+            <div class="text-center mt-2"><h4>${card.title}</h4></div>
+            <div class="text-center mt-2"><p>${card.description}</p></div>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Open</button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// Show account info in the modal
+function showAccountInfo(cardId) {
+  const storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+  const card = storedCards.find(c => c.id === cardId);
+  if (card) {
+    document.querySelector('#accountinfo .modal-title').innerText = card.title;
+    document.querySelector('#accountinfo .modal-body').innerHTML = `
+      <p><strong>Category:</strong> ${card.category}</p>
+      <p><strong>Description:</strong> ${card.description}</p>
+      <p><strong>Additional Info:</strong> ${card.additionalInfo || 'N/A'}</p>
+    `;
+  }
+}
+
+// Remove card by ID
+function removeCard(cardId) {
+  let storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+  storedCards = storedCards.filter(card => card.id !== cardId);
+  localStorage.setItem('addedCards', JSON.stringify(storedCards));
+  loadCards(); // Re-render cards
+}
+
+</script>
+
