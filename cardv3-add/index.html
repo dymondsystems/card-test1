@@ -1,0 +1,119 @@
+<button 
+  class="add-card-btn" 
+  data-id="1" 
+  data-title="Spotify" 
+  data-image="spotify-logo.png" 
+  data-description="Access millions of songs, podcasts, and audiobooks"
+  data-category="business"
+  data-border-class="border-secondary"
+  data-text-class="text-secondary"
+  data-modal="test">
+  Add Spotify
+</button>
+<button 
+  class="add-card-btn" 
+  data-id="2" 
+  data-title="Spotify2" 
+  data-image="spotify-logo.png" 
+  data-description="Access millions of songs, podcasts, and audiobooks"
+  data-category="business"
+  data-border-class="border-secondary"
+  data-text-class="text-secondary"
+  data-modal="test">
+  Add Spotify2
+</button>
+
+<script>
+  // Function to add a card to localStorage
+  function addCardToStorage(cardData) {
+    const storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+    storedCards.push(cardData);
+    localStorage.setItem('addedCards', JSON.stringify(storedCards));
+    
+  }
+
+  // Function to remove a card from localStorage
+  function removeCardFromStorage(cardId) {
+    const storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+    const updatedCards = storedCards.filter(card => card.id !== cardId);
+    localStorage.setItem('addedCards', JSON.stringify(updatedCards));
+    alert('App removed!');
+  }
+
+  // Function to handle adding/removing cards and updating the button text
+  function handleCardButtonClick(event) {
+    const button = event.target;
+    const cardData = {
+      id: button.dataset.id,
+      title: button.dataset.title,
+      image: button.dataset.image,
+      description: button.dataset.description,
+      category: button.dataset.category,
+      borderClass: button.dataset.borderClass,
+      textClass: button.dataset.textClass,
+      modal: button.dataset.modal
+    };
+
+    // Check if card is already in localStorage
+    const storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+    const cardExists = storedCards.some(card => card.id === cardData.id);
+
+    if (cardExists) {
+      // Remove the card and change button text back to "Add"
+      removeCardFromStorage(cardData.id);
+      button.textContent = 'Add ' + cardData.title;
+      updateButtonState(button, false); // Store button state as "Add"
+    } else {
+      // Add the card and change button text to "Remove"
+      addCardToStorage(cardData);
+      button.textContent = 'App added!';
+      updateButtonState(button, true); // Store button state as "Remove"
+    }
+  }
+
+  // Function to update the button state in localStorage
+  function updateButtonState(button, isAdded) {
+    const buttonStates = JSON.parse(localStorage.getItem('buttonStates')) || {};
+    buttonStates[button.dataset.id] = isAdded; // Store the state by button id
+    localStorage.setItem('buttonStates', JSON.stringify(buttonStates));
+  }
+
+  // Function to restore the button state on page load
+  function restoreButtonStates() {
+    const buttonStates = JSON.parse(localStorage.getItem('buttonStates')) || {};
+    document.querySelectorAll('.add-card-btn').forEach(button => {
+      const isAdded = buttonStates[button.dataset.id];
+      if (isAdded) {
+        button.textContent = 'Remove5';
+      } else {
+        button.textContent = 'Add ' + button.dataset.title;
+      }
+    });
+  }
+
+  // Event delegation for card button clicks
+  document.body.addEventListener('click', function(event) {
+    if (event.target.matches('.add-card-btn')) {
+      handleCardButtonClick(event);
+    }
+  });
+
+  // Restore the button states when the page loads
+  window.addEventListener('load', restoreButtonStates);
+</script>
+
+<script>
+window.onload = function() {
+  const storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+  const buttons = document.querySelectorAll('.add-card-btn');
+  buttons.forEach(button => {
+    const buttonId = button.dataset.id;
+    if (storedCards.some(card => card.id == buttonId)) {
+      button.textContent = 'Remove app';
+    } else {
+      button.textContent = 'Add app';
+    }
+  });
+};
+
+</script>
