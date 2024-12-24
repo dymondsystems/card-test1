@@ -1,0 +1,1180 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Card Management</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+  
+  <!-- jQuery and Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+  <style>
+    #cardContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .card-item {
+      flex: 0 0 calc(25% - 15px);
+      max-width: calc(25% - 15px);
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 768px) {
+      .card-item {
+        flex: 0 0 calc(50% - 15px);
+        max-width: calc(50% - 15px);
+      }
+    }
+
+    @media (max-width: 576px) {
+      .card-item {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+    }
+
+    .card {
+      margin-bottom: 20px;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      right: 0;
+      left: auto;
+    }
+    
+    /* General styles for open buttons */
+    .open-btn {
+      position: fixed;
+      bottom: 20px;
+      z-index: 1030;
+      transform: translateX(-50%);
+    }
+
+    /* Position each open button */
+    #open-btn1 { left: 20%; }
+    #open-btn2 { left: 40%; }
+    #open-btn3 { left: 60%; }
+    #open-btn4 { left: 80%; }
+
+    /* Sticky container for animated buttons */
+    .button-container {
+      position: sticky;
+      top: 0;
+      display: flex;
+      justify-content: flex-start;
+      gap: 10px;
+      z-index: 1030;
+      padding: 10px;
+      background-color: #f8f9fa;
+      flex-wrap: nowrap; /* Ensure the buttons don't wrap onto new lines */
+      overflow-x: auto; /* Allow horizontal scroll if needed */
+    }
+
+    /* Collapsible container styles */
+    #collapsible-container {
+      display: none; /* Initially collapsed */
+      width: 100%;
+      background-color:#f8f9fa;
+      padding: 10px;
+      margin-top: 10px;
+      transition: max-height 0.5s ease-in-out;
+      max-height: 0;
+      overflow: hidden;
+    }
+
+    /* Button styles */
+    .animated-btn {
+      width: 100px;
+      height: 50px;
+      transition: all 0.5s ease-in-out;
+      text-align: left;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      position: relative;
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-direction: column;
+      background-color: #007bff;
+      overflow: hidden;
+      /* Default size */
+    }
+
+    /* Layout for image and text inside buttons */
+    .animated-btn img {
+      width: 25px;
+      height: 25px;
+      margin-right: 5px;
+      transition: all 0.3s ease-in-out;
+    }
+
+    /* Button expand on hover */
+.animated-btn:hover {
+  width: 200px; /* Make the button 200px wide when hovered */
+  height: 180px; /* Make the button 150px tall when hovered */
+  transition: all 0.3s ease-in-out; /* Smooth transition */
+  flex-direction: column; /* Stack the image and text vertically */
+  justify-content: center; /* Center the content */
+  align-items: center; /* Align content in the center */
+  min-width: 200px;
+}
+
+/* Image grows when button expands */
+.animated-btn:hover img {
+  width: 100px; /* Image becomes bigger when the button expands */
+  height: 80px; /* Maintain aspect ratio */
+}
+
+
+    /* Close button styles */
+    .close-btn {
+  display: none;
+  padding: 5px 10px;
+  background: white;
+  color: black;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  font-size: 12px;
+  margin-bottom: 5px; /* Space between buttons */
+  
+}
+    
+
+    /* Link button styles */
+    .link-btn {
+      display: none;
+      margin-bottom: 10px;
+      padding: 5px 10px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    /* Show close button and link button when expanded */
+    .animated-btn:hover .close-btn,
+    .animated-btn:hover .link-btn {
+      display: inline-block; /* Change to inline-block so they're side-by-side */
+    }
+
+    /* Background colors for each button */
+    .animated-btn-1 { background-color: #007bff; }
+    .animated-btn-2 { background-color: #28a745; }
+    .animated-btn-3 { background-color: #ffc107; }
+    .animated-btn-4 { background-color: #dc3545; }
+
+    /* Container for close and link buttons */
+    .btn-container {
+      display: flex;
+      gap: 10px; /* Space between buttons */
+      margin-top: 10px;
+    }
+
+    /* Hide the toggle button when the container has enough space */
+    #toggle-btn {
+      display: none;
+    }
+    
+    
+    
+    
+    /* Style the scrollbar container */
+::-webkit-scrollbar {
+  width: 12px; /* Width of the vertical scrollbar */
+  height: 12px; /* Height of the horizontal scrollbar */
+}
+
+/* Style the scrollbar track (background of the scrollbar) */
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1; /* Light gray color for the track */
+  border-radius: 10px; /* Rounded corners */
+}
+
+/* Style the scrollbar thumb (the draggable part of the scrollbar) */
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Darker color for the thumb */
+  border-radius: 10px; /* Rounded corners */
+  border: 2px solid #f1f1f1; /* Border around the thumb */
+}
+
+/* Style the scrollbar thumb on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darker color for the thumb when hovered */
+}
+
+  </style>
+</head>
+<body>
+ <div id="stickyButtonsContainer" class="button-container"></div>
+
+  <!-- Collapsible container for extra buttons -->
+  <div id="collapsible-container">
+    <div class="button-container"></div>
+  </div>
+
+
+<!-- Add Section Form -->
+    <div class="my-4">
+      <input type="text" id="sectionTitle" class="form-control" placeholder="Enter section title">
+      <button id="addSectionBtn" class="btn btn-success mt-2">Add Section</button>
+    </div>
+  </div>
+<div class="form-group">
+        <input type="text" id="filterInput" class="form-control" placeholder="Search stacks...">
+    </div>
+    <div id="noResultsMessage" class="alert alert-warning text-center d-none">
+    No apps found... Looking for an app? <a href="#">Try searching</a>
+</div>
+
+  <div class="container mt-4">
+    <h2 class="text-center mb-4">Dynamic Card Management</h2>
+    <div id="sectionsContainer">
+      <!-- Dynamic sections and cards will load here -->
+    </div>
+
+    
+
+
+
+  <!-- Account Info Modal -->
+  <div class="modal fade" id="accountinfo" tabindex="-1" role="dialog" aria-labelledby="accountinfoLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="accountinfoLabel">Account Info</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Dynamic content will be inserted here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- The Modal -->
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+       <div class="modal-header d-flex align-items-center">
+  <img id="modalImage" src="" alt="Card Image" class="rounded-circle mr-2" style="width: 40px; height: 40px; display: none;">
+  <h4 class="modal-title mb-0" id="modalTitle">Launch Pad</h4>
+          
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body" id="modalBody">
+          <!-- Dynamically added buttons will appear here -->
+          <div id="launch-buttons" class="mb-3">
+            <!-- Buttons content will go here -->
+          </div>
+
+          
+
+          <!-- Add/Edit Button Form -->
+          <button id="toggleFormButton" class="btn btn-success" data-toggle="collapse" data-target="#addEditButton">New launch</button>
+          <div id="addEditButton" class="collapse mt-3">
+            <form id="newButtonForm">
+              <div class="form-group">
+                <label for="buttonURL">Button URL:</label>
+                <input type="url" class="form-control" id="buttonURL" required>
+              </div>
+              <div class="form-group">
+                <label for="buttonName">Button Name:</label>
+                <input type="text" class="form-control" id="buttonName" required>
+              </div>
+              <div class="form-group">
+                <label>Open Link:</label><br>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="openType" id="openNewTab" value="newTab" checked>
+                  <label class="form-check-label" for="openNewTab">In New Tab</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="openType" id="openNewWindow" value="newWindow">
+                  <label class="form-check-label" for="openNewWindow">In New Window</label>
+                </div>
+              </div>
+              <div id="windowSizeOptions" style="display:none;">
+                <div class="form-group">
+                  <label>Window Size:</label><br>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="windowSize" id="sizeSmall" value="small" checked>
+                    <label class="form-check-label" for="sizeSmall">Small (600x400)</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="windowSize" id="sizeMedium" value="medium">
+                    <label class="form-check-label" for="sizeMedium">Medium</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="windowSize" id="sizeLarge" value="large">
+                    <label class="form-check-label" for="sizeLarge">Large</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="windowSize" id="sizeFull" value="full">
+                    <label class="form-check-label" for="sizeFull">Full Screen</label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <button type="submit" id="saveButton" class="btn btn-primary">Add</button>
+                <button type="button" id="cancelButton" class="btn btn-secondary">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+         <button type="button" class="btn btn-primary" id="stickToTop">Stick to Top</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rename Section Modal -->
+<div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="renameModalLabel">Rename Stack</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="renameInput" class="form-control" placeholder="Enter new section name">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveRenameBtn"  data-dismiss="modal">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar Links Section -->
+<div class="sidebar-menu">
+  <ul id="sidebarLinksContainer">
+    <!-- Dynamically added links will appear here -->
+  </ul>
+</div>
+   <script>
+ document.addEventListener('DOMContentLoaded', () => {
+  loadSections();
+
+  // Add new section
+  document.getElementById('addSectionBtn').addEventListener('click', () => {
+    const sectionTitle = document.getElementById('sectionTitle').value.trim();
+    if (sectionTitle) {
+      const sections = JSON.parse(localStorage.getItem('sections')) || [];
+      const sectionId = `section-${Date.now()}`;
+      sections.push({ id: sectionId, title: sectionTitle });
+      localStorage.setItem('sections', JSON.stringify(sections));
+      document.getElementById('sectionTitle').value = '';
+       loadSections(); // Update main content
+    renderSidebar(); // Update sidebar
+    } else {
+      showAlert('Please enter a section title.', 'warning');
+    }
+  });
+
+  // Set up event listener for rename modal save button
+  document.getElementById('saveRenameBtn').addEventListener('click', () => {
+    const sectionId = document.getElementById('renameModal').dataset.sectionId;
+    const newTitle = document.getElementById('renameInput').value.trim();
+    if (newTitle) {
+      const sections = JSON.parse(localStorage.getItem('sections')) || [];
+      const section = sections.find(sec => sec.id === sectionId);
+
+      if (section) {
+        section.title = newTitle;
+        localStorage.setItem('sections', JSON.stringify(sections));
+        document.getElementById(`title-${sectionId}`).textContent = newTitle;
+        renderSidebar(); // Update sidebar
+        showAlert('Section renamed successfully!', 'success');
+      }
+
+      $('#renameModal').modal('hide');
+    } else {
+      showAlert('Section title cannot be empty!', 'danger');
+    }
+  });
+});
+
+// Load sections and render them
+function loadSections() {
+  const sectionsContainer = document.getElementById('sectionsContainer');
+  const sections = JSON.parse(localStorage.getItem('sections')) || [];
+  sectionsContainer.innerHTML = ''; // Clear existing content
+
+  sections.forEach(section => {
+    const sectionDiv = document.createElement('div');
+    sectionDiv.classList.add('section-container', 'mb-4');
+    sectionDiv.id = section.id;
+    sectionDiv.innerHTML = `
+      <hr>
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 id="title-${section.id}">${section.title}</h3>
+        <div class="dropdown">
+          <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton-${section.id}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Edit
+          </button>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton-${section.id}">
+            <a class="dropdown-item" href="#" onclick="openRenameModal('${section.id}', '${section.title}')">Rename </a>
+            <a class="dropdown-item text-danger" href="#" onclick="removeSection('${section.id}')">Remove </a>
+          </div>
+        </div>
+      </div>
+      <div class="row" id="cards-${section.id}">
+        <!-- Cards will be dynamically inserted here -->
+      </div>
+    `;
+    sectionsContainer.appendChild(sectionDiv);
+
+
+// Populate the sidebar with a link to the section
+    const sidebarLink = document.createElement('li');
+    sidebarLink.innerHTML = `
+      <a href="#${section.id}">
+        <i class="fa fa-circle"></i> ${section.title}
+      </a>
+    `;
+    sidebarLinksContainer.appendChild(sidebarLink);
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+    // Make cards sortable within each section
+    new Sortable(document.getElementById(`cards-${section.id}`), {
+      group: 'shared',
+      animation: 150,
+      onEnd: saveCardsToLocalStorage,
+    });
+  });
+
+  loadCards(); // Re-render cards
+  
+}
+
+// Open rename modal and populate it with section data
+function openRenameModal(sectionId, sectionTitle) {
+  document.getElementById('renameModal').dataset.sectionId = sectionId;
+  document.getElementById('renameInput').value = sectionTitle;
+  $('#renameModal').modal('show');
+}
+
+// Save cards to localStorage
+function saveCardsToLocalStorage() {
+  const sections = JSON.parse(localStorage.getItem('sections')) || [];
+  const allCards = [];
+  sections.forEach(section => {
+    const cardContainer = document.getElementById(`cards-${section.id}`);
+    cardContainer.querySelectorAll('.card-item').forEach(card => {
+      const cardData = {
+        id: card.dataset.id,
+        title: card.dataset.title,
+        image: card.dataset.image,
+        description: card.dataset.description,
+        sectionId: section.id,
+        category: card.dataset.category,
+      };
+      allCards.push(cardData);
+    });
+  });
+  localStorage.setItem('addedCards', JSON.stringify(allCards));
+}
+
+// Show alert
+function showAlert(message, type) {
+  const alertContainer = document.getElementById('alertContainer');
+  const alert = document.createElement('div');
+  alert.className = `alert alert-${type} alert-dismissible fade show`;
+  alert.innerHTML = `
+    ${message}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  `;
+  alertContainer.appendChild(alert);
+
+  setTimeout(() => {
+    $(alert).alert('close');
+  }, 3000);
+}
+
+
+    
+    
+   
+    
+    
+   
+function loadCards() {
+  const storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+  storedCards.forEach(card => {
+    const sectionContainer = document.getElementById(`cards-${card.sectionId}`);
+    if (sectionContainer) {
+      const cardDiv = document.createElement('div');
+      cardDiv.classList.add('col-md-3', 'card-item');
+      cardDiv.dataset.id = card.id;
+      cardDiv.dataset.title = card.title;
+      cardDiv.dataset.image = card.image;
+      cardDiv.dataset.description = card.description;
+      cardDiv.dataset.category = card.category;
+      cardDiv.dataset.modalId = card.modalId;
+
+      cardDiv.innerHTML = `
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="dropdown">
+              <i class="fa fa-ellipsis-v" aria-hidden="true" data-toggle="dropdown" style="float: right;"></i>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" data-toggle="modal" href="#accountinfo" onclick="showAccountInfo('${card.id}')">Add account info</a>
+                <a class="dropdown-item" href="#">Edit category</a>
+                <a class="dropdown-item text-danger" href="#" onclick="removeCard('${card.id}')">Remove</a>
+              </div>
+            </div>
+            <img src="${card.image}" alt="${card.title}" class="img-fluid">
+            <h5 class="mt-2">${card.title}</h5>
+            <p>${card.description}</p>
+            <button 
+              type="button" 
+              class="btn btn-primary mt-2" 
+              data-toggle="modal" 
+              data-target="#myModal" 
+              data-title="${card.title}" 
+              data-image="${card.image}" 
+              data-modal="${card.modalId}">
+              Open Modal
+            </button>
+          </div>
+        </div>
+      `;
+      sectionContainer.appendChild(cardDiv);
+    }
+  });
+
+  // Attach modal update functionality after cards are loaded
+  attachModalTitleUpdate();
+}
+
+function attachModalTitleUpdate() {
+  const modalButtons = document.querySelectorAll("[data-target='#myModal']");
+
+  modalButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      const title = button.getAttribute("data-title");
+      const image = button.getAttribute("data-image");
+      const modalTitle = document.getElementById("modalTitle");
+      const modalImage = document.getElementById("modalImage");
+
+      // Update the modal title
+      if (modalTitle && title) {
+        modalTitle.innerText = title;
+      } else {
+        console.error("Modal title element not found or title is null!");
+      }
+
+      // Update the modal image
+      if (modalImage && image) {
+        modalImage.src = image;
+        modalImage.style.display = "inline-block";
+      } else if (modalImage) {
+        modalImage.style.display = "none";
+      }
+    });
+  });
+}
+
+// Show account info in the modal
+function showAccountInfo(cardId) {
+  const storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+  const card = storedCards.find(c => c.id === cardId);
+  if (card) {
+    document.querySelector('#accountinfo .modal-title').innerText = card.title;
+    document.querySelector('#accountinfo .modal-body').innerHTML = `
+      <p><strong>Category:</strong> ${card.category}</p>
+      <p><strong>Description:</strong> ${card.description}</p>
+    `;
+  }
+}
+
+
+   
+    
+    
+    
+    
+    function removeCard(cardId) {
+  let storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+  storedCards = storedCards.filter(card => card.id !== cardId);
+  localStorage.setItem('addedCards', JSON.stringify(storedCards));
+  document.querySelector(`[data-id="${cardId}"]`).remove(); // Remove card from DOM
+}
+
+    
+  </script> 
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// Select modal-related elements
+const launchButtonsContainer = document.getElementById('launch-buttons');
+const newButtonForm = document.getElementById('newButtonForm');
+const toggleFormButton = document.getElementById('toggleFormButton');
+const saveButton = document.getElementById('saveButton');
+const cancelButton = document.getElementById('cancelButton');
+let currentModal = null;
+let editingButton = null;
+
+// Load buttons for a specific modal
+function loadButtons(modalId) {
+  launchButtonsContainer.innerHTML = '';  // Clear current buttons
+  
+  const buttons = JSON.parse(localStorage.getItem(`launchButtons_${modalId}`)) || [];
+  buttons.forEach(button => createButton(button));
+}
+
+// Save buttons for a specific modal
+function saveButtons(modalId) {
+  const buttons = [];
+  document.querySelectorAll('.launch-button').forEach(btn => {
+    buttons.push({
+      url: btn.dataset.url,
+      name: btn.dataset.name,
+      size: btn.dataset.size,
+      openType: btn.dataset.openType
+    });
+  });
+  localStorage.setItem(`launchButtons_${modalId}`, JSON.stringify(buttons));
+}
+
+// Create and append a button to the modal
+function createButton({ url, name, size, openType }) {
+  const buttonDiv = document.createElement('div');
+  buttonDiv.className = 'btn-group mb-2';
+
+  const button = document.createElement('button');
+  button.className = 'btn btn-sq-lg btn-outline-primary launch-button';
+  button.dataset.url = url;
+  button.dataset.name = name;
+  button.dataset.size = size;
+  button.dataset.openType = openType;
+  button.innerHTML = `<i class='fa fa-external-link'></i><br>${name}`;
+
+  button.onclick = () => {
+    if (openType === 'newTab') {
+      window.open(url, '_blank');
+    } else {
+      openWindow(url, size);
+    }
+  };
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'dropdown';
+  dropdown.innerHTML = `    
+    <button class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown"></button>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#" onclick="editButton(this)">Edit</a>
+      <a class="dropdown-item text-danger" href="#" onclick="removeButton(this)">Remove</a>
+    </div>`;
+
+  buttonDiv.appendChild(button);
+  buttonDiv.appendChild(dropdown);
+  launchButtonsContainer.appendChild(buttonDiv);
+}
+
+// Open a new window based on the selected size
+function openWindow(url, size) {
+  let width, height, left, top;
+
+  switch (size) {
+    case 'small':
+      width = screen.width * 0.4;
+      height = screen.height * 0.4;
+      break;
+    case 'medium':
+      width = screen.width * 0.6;
+      height = screen.height * 0.6;
+      break;
+    case 'large':
+      width = screen.width * 0.8;
+      height = screen.height * 0.8;
+      break;
+    case 'full':
+      width = screen.width * 1.0;
+      height = screen.height * 1.0;
+      break;
+    default:
+      width = screen.width * 0.5;
+      height = screen.height * 0.5;
+  }
+
+  left = (screen.width - width) / 2;
+  top = (screen.height - height) / 2;
+
+  window.open(url, '_blank', `width=${width},height=${height},top=${top},left=${left}`);
+}
+
+// Add or edit button
+newButtonForm.onsubmit = (e) => {
+  e.preventDefault();
+  const url = document.getElementById('buttonURL').value;
+  const name = document.getElementById('buttonName').value;
+  const size = document.querySelector('input[name="windowSize"]:checked').value;
+  const openType = document.querySelector('input[name="openType"]:checked').value;
+
+  if (editingButton) {
+    // Update existing button
+    editingButton.dataset.url = url;
+    editingButton.dataset.name = name;
+    editingButton.dataset.size = size;
+    editingButton.dataset.openType = openType;
+    editingButton.innerHTML = `<i class='fa fa-external-link'></i><br>${name}`;
+    editingButton = null;
+    saveButton.textContent = 'Add';
+  } else {
+    // Create new button
+    createButton({ url, name, size, openType });
+  }
+
+  // Save the updated buttons and refresh the list
+  saveButtons(currentModal);
+  loadButtons(currentModal);
+  newButtonForm.reset();
+  $('#addEditButton').collapse('hide');
+};
+
+// Edit button
+function editButton(el) {
+  const button = el.closest('.btn-group').querySelector('.launch-button');
+  document.getElementById('buttonURL').value = button.dataset.url;
+  document.getElementById('buttonName').value = button.dataset.name;
+  document.querySelector(`input[value="${button.dataset.size}"]`).checked = true;
+  document.querySelector(`input[value="${button.dataset.openType}"]`).checked = true;
+  editingButton = button;
+  saveButton.textContent = 'Save';
+  $('#addEditButton').collapse('show');
+}
+
+// Remove button
+function removeButton(el) {
+  el.closest('.btn-group').remove();
+  saveButtons(currentModal);
+  loadButtons(currentModal);
+}
+
+// Cancel button
+cancelButton.onclick = () => {
+  newButtonForm.reset();
+  editingButton = null;
+  saveButton.textContent = 'Add';
+  $('#addEditButton').collapse('hide');
+};
+
+// Open modal
+$('#myModal').on('show.bs.modal', function (e) {
+  currentModal = $(e.relatedTarget).data('modal'); // Get modal ID
+  loadButtons(currentModal);
+});
+
+// Initialize
+$('#myModal').on('hidden.bs.modal', function () {
+  editingButton = null;
+  saveButton.textContent = 'Add';
+  $('#addEditButton').collapse('hide');
+});
+</script>
+
+<script>
+// Function to load buttons for a specific modal
+function loadButtons(modalId) {
+  launchButtonsContainer.innerHTML = '';  // Clear current buttons
+
+  // Predefined buttons for each modal
+  const predefinedButtons = {
+    1: [
+      { url: 'https://www.example.com', name: 'Example Button 1', size: 'small', openType: 'newTab' }
+    ],
+    2: [
+      { url: 'https://www.example.com', name: 'Example Button 2', size: 'medium', openType: 'newTab' }
+    ],
+    3: [
+      { url: 'https://www.example.com', name: 'Example Button 3', size: 'large', openType: 'newTab' }
+    ]
+  };
+
+  // Get predefined buttons and saved buttons from localStorage
+  const predefined = predefinedButtons[modalId] || [];
+  const savedButtons = JSON.parse(localStorage.getItem(`launchButtons_${modalId}`)) || [];
+
+  // Merge and avoid duplicates by filtering out already existing buttons (based on URL)
+  const allButtons = [
+    ...predefined.filter(p => !savedButtons.some(s => s.url === p.url)),
+    ...savedButtons
+  ];
+
+  // Create buttons from the merged list
+  allButtons.forEach(button => createButton(button, modalId));
+}
+
+// Function to create and append a button to the modal
+function createButton({ url, name, size, openType }, modalId) {
+  const buttonDiv = document.createElement('div');
+  buttonDiv.className = 'btn-group mb-2';
+
+  const button = document.createElement('button');
+  button.className = 'btn btn-sq-lg btn-outline-primary launch-button';
+  button.dataset.url = url;
+  button.dataset.name = name;
+  button.dataset.size = size;
+  button.dataset.openType = openType;
+  button.innerHTML = `<i class='fa fa-external-link'></i><br>${name}`;
+
+  button.onclick = () => {
+    if (openType === 'newTab') {
+      window.open(url, '_blank');
+    } else {
+      openWindow(url, size);
+    }
+  };
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'dropdown';
+  dropdown.innerHTML = `    
+    <button class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown"></button>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#" onclick="editButton(this, ${modalId})">Edit</a>
+      <a class="dropdown-item text-danger" href="#" onclick="removeButton(this, ${modalId})">Remove</a>
+    </div>`;
+
+  buttonDiv.appendChild(button);
+  buttonDiv.appendChild(dropdown);
+  launchButtonsContainer.appendChild(buttonDiv);
+}
+
+// Function to remove a button from both DOM and localStorage
+function removeButton(element, modalId) {
+  const buttonDiv = element.closest('.btn-group');  // Get the parent .btn-group of the clicked button
+  
+  // Remove from DOM
+  buttonDiv.remove();
+
+  // Remove from localStorage
+  const url = buttonDiv.querySelector('.launch-button').dataset.url;
+
+  // Load saved buttons from localStorage
+  let savedButtons = JSON.parse(localStorage.getItem(`launchButtons_${modalId}`)) || [];
+
+  // Remove the button from the saved list
+  savedButtons = savedButtons.filter(button => button.url !== url);
+
+  // Save the updated list back to localStorage
+  localStorage.setItem(`launchButtons_${modalId}`, JSON.stringify(savedButtons));
+}
+
+// Function to save a new button to localStorage (for edit or new button creation)
+function saveButtonToLocalStorage({ url, name, size, openType }, modalId) {
+  const savedButtons = JSON.parse(localStorage.getItem(`launchButtons_${modalId}`)) || [];
+
+  // Check if the button already exists in saved buttons
+  if (!savedButtons.some(button => button.url === url)) {
+    savedButtons.push({ url, name, size, openType });
+
+    // Save the updated list back to localStorage
+    localStorage.setItem(`launchButtons_${modalId}`, JSON.stringify(savedButtons));
+  }
+}
+
+// Example of calling saveButtonToLocalStorage when creating/editing a button
+function createOrEditButton(url, name, size, openType, modalId) {
+  // Save button to localStorage when created or edited
+  saveButtonToLocalStorage({ url, name, size, openType }, modalId);
+
+  // Optionally, reload the buttons after saving
+  loadButtons(modalId);
+}
+
+
+
+</script>
+
+<script>
+const openTypeRadios = document.querySelectorAll('input[name="openType"]');
+const windowSizeOptions = document.getElementById('windowSizeOptions'); // The div containing window size options
+
+// Function to toggle window size options based on the "Open Link" choice
+function toggleWindowSizeOptions() {
+  const openType = document.querySelector('input[name="openType"]:checked').value;
+
+  if (openType === 'newWindow') {
+    windowSizeOptions.style.display = 'block'; // Show window size options
+  } else {
+    windowSizeOptions.style.display = 'none'; // Hide window size options
+  }
+}
+
+// Listen for changes in the "Open Link" radio buttons
+openTypeRadios.forEach(radio => {
+  radio.addEventListener('change', toggleWindowSizeOptions);
+});
+
+// Call the toggle function on page load to set the initial state
+toggleWindowSizeOptions();
+</script>
+
+
+<script>
+function removeSection(sectionId) {
+  // Remove section from localStorage
+  let sections = JSON.parse(localStorage.getItem('sections')) || [];
+  sections = sections.filter(section => section.id !== sectionId);
+  localStorage.setItem('sections', JSON.stringify(sections));
+
+  // Remove associated cards
+  let storedCards = JSON.parse(localStorage.getItem('addedCards')) || [];
+  storedCards = storedCards.filter(card => card.sectionId !== sectionId);
+  localStorage.setItem('addedCards', JSON.stringify(storedCards));
+
+  // Remove section from the DOM
+  document.getElementById(sectionId)?.remove();
+  
+  renderSidebar(); // Update sidebar
+}
+
+
+
+
+</script>
+
+
+
+
+
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const stickyButtonsContainer = document.getElementById('stickyButtonsContainer');
+  const stickToTopButton = document.getElementById('stickToTop');
+  let currentCardData = null; // Temporary storage for the currently viewed card data
+
+  // Load sticky buttons from localStorage
+  loadStickyButtons();
+
+  // Event Listener for "Stick to Top" button
+  stickToTopButton.addEventListener('click', () => {
+    if (currentCardData) {
+      addStickyButton(currentCardData);
+      saveStickyButtons();
+      $('#myModal').modal('hide'); // Close the modal after sticking the button
+    }
+  });
+
+  // Function to Add a Sticky Button
+  function addStickyButton(cardData) {
+    const button = document.createElement('div');
+    button.classList.add('animated-btn', 'sticky-btn');
+
+    button.innerHTML = `
+      <button class="close-btn">X</button>
+      <img src="${cardData.image}" alt="${cardData.title}" />
+      <span>${cardData.title}</span>
+      <div class="btn-container">
+        <button 
+          class="btn btn-sm btn-primary open-modal-btn" 
+          data-title="${cardData.title}" 
+          data-image="${cardData.image}" 
+          data-id="${cardData.id}">
+          Open
+        </button>
+      </div>
+    `;
+
+    // Close Button Functionality
+    button.querySelector('.close-btn').addEventListener('click', () => {
+      stickyButtonsContainer.removeChild(button);
+      saveStickyButtons();
+    });
+
+    // Open Modal Button
+    button.querySelector('.open-modal-btn').addEventListener('click', () => {
+      openMyModal(cardData); // Pass card data to dynamically update #myModal
+    });
+
+    stickyButtonsContainer.appendChild(button);
+  }
+
+  // Save Sticky Buttons to localStorage
+  function saveStickyButtons() {
+    const buttons = [];
+    stickyButtonsContainer.querySelectorAll('.sticky-btn').forEach(button => {
+      buttons.push({
+        id: button.querySelector('.open-modal-btn').dataset.id,
+        title: button.querySelector('span').innerText,
+        image: button.querySelector('img').src,
+        modalId: '#myModal', // Always uses #myModal
+      });
+    });
+    localStorage.setItem('stickyButtons', JSON.stringify(buttons));
+  }
+
+  // Load Sticky Buttons from localStorage
+  function loadStickyButtons() {
+    const storedButtons = JSON.parse(localStorage.getItem('stickyButtons')) || [];
+    storedButtons.forEach(buttonData => addStickyButton(buttonData));
+  }
+
+  // Function to Dynamically Update and Open #myModal
+  function openMyModal(cardData) {
+    const modalTitle = document.getElementById('modalTitle');
+    const modalImage = document.getElementById('modalImage');
+
+    // Update modal content
+    if (modalTitle && modalImage) {
+      modalTitle.innerText = cardData.title;
+      modalImage.src = cardData.image;
+      modalImage.style.display = 'inline-block';
+    }
+
+    // Open the modal
+    $('#myModal').modal('show');
+  }
+
+  // Attach Event Listeners to Card Buttons (Dynamic Update for Current Modal Data)
+  document.querySelectorAll("[data-target='#myModal']").forEach(button => {
+    button.addEventListener('click', () => {
+      currentCardData = {
+        id: button.getAttribute('data-id'),
+        title: button.getAttribute('data-title'),
+        image: button.getAttribute('data-image'),
+      };
+    });
+  });
+});
+
+
+</script>
+
+   <script>
+ document.getElementById('filterInput').addEventListener('input', function () {
+    const filterValue = this.value.toLowerCase();
+    const cards = document.querySelectorAll('.card-item');
+    let hasMatch = false; // Flag to track if any cards are visible
+
+    cards.forEach(card => {
+        const cardText = card.innerText.toLowerCase();
+        const cardCategory = card.getAttribute('data-category').toLowerCase();
+        
+        // Check if the filter value matches either the card text or category
+        if (cardText.includes(filterValue) || cardCategory.includes(filterValue)) {
+            card.classList.remove('d-none');
+            hasMatch = true; // A match is found
+        } else {
+            card.classList.add('d-none');
+        }
+    });
+
+    // Show or hide the "No Results" message based on matches
+    const noResultsMessage = document.getElementById('noResultsMessage');
+    if (hasMatch) {
+        noResultsMessage.classList.add('d-none');
+    } else {
+        noResultsMessage.classList.remove('d-none');
+    }
+});
+
+
+    </script>
+
+
+<script>
+function renderSidebar() {
+  const sections = JSON.parse(localStorage.getItem('sections')) || [];
+  const sidebarMenu = document.querySelector('.sidebar-menu ul'); // Adjust selector based on your HTML structure
+
+  // Clear existing sidebar content
+  sidebarMenu.innerHTML = `
+    <li class="header-menu">
+      <span>Sections</span>
+    </li>
+  `;
+
+  // Add each section to the sidebar
+  sections.forEach(section => {
+    const sectionLink = document.createElement('li');
+    sectionLink.innerHTML = `
+      <a href="#${section.id}">
+        <i class="fa fa-folder"></i>
+        <span>${section.title}</span>
+      </a>
+    `;
+    sidebarMenu.appendChild(sectionLink);
+  });
+}
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
